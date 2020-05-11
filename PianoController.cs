@@ -7,8 +7,6 @@ public class PianoController : MonoBehaviour
 {
     public Dictionary<int, PianoKey> keyMap { get; private set; }     // intはノード番号、GameObjectは鍵盤のGameObjectを格納
 
-    [SerializeField]
-    GameObject keysParentObj;
 
     public Dictionary<int, Vector3> defaultKeyPos { get; private set; }
 
@@ -20,7 +18,7 @@ public class PianoController : MonoBehaviour
         keyMap = new Dictionary<int, PianoKey>();
         defaultKeyPos = new Dictionary<int, Vector3>();
 
-        foreach (Transform childTransform in keysParentObj.transform)
+        foreach (Transform childTransform in gameObject.transform)
         {
             keyMap.Add(ConvertStringkeyToNodenumber(childTransform.name), new PianoKey(childTransform.gameObject));
             defaultKeyPos.Add(ConvertStringkeyToNodenumber(childTransform.name), childTransform.position);

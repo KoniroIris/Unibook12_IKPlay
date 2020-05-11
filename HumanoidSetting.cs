@@ -47,11 +47,31 @@ public class HumanoidSetting : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-            fingerMove(84);
+        if (Input.GetKeyDown(KeyCode.Q))
+            fingerMove(76);
         if (Input.GetKeyDown(KeyCode.Alpha2))
-            fingerMove(86);
+            fingerMove(77);
+        if (Input.GetKeyDown(KeyCode.W))
+            fingerMove(78);
         if (Input.GetKeyDown(KeyCode.Alpha3))
+            fingerMove(79);
+        if (Input.GetKeyDown(KeyCode.E))
+            fingerMove(80);
+        if (Input.GetKeyDown(KeyCode.R))
+            fingerMove(81);
+        if (Input.GetKeyDown(KeyCode.Alpha5))
+            fingerMove(82);
+        if (Input.GetKeyDown(KeyCode.T))
+            fingerMove(83);
+        if (Input.GetKeyDown(KeyCode.Alpha6))
+            fingerMove(84);
+        if (Input.GetKeyDown(KeyCode.Y))
+            fingerMove(85);
+        if (Input.GetKeyDown(KeyCode.Alpha7))
+            fingerMove(86);
+        if (Input.GetKeyDown(KeyCode.U))
+            fingerMove(87);
+        if (Input.GetKeyDown(KeyCode.I))
             fingerMove(88);
     }
 
