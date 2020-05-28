@@ -1,32 +1,56 @@
 ﻿using RootMotion.FinalIK;
 using UnityEngine;
 
+/// <summary>
+/// 主にIKの処理順を管理するマネージャクラス
+/// </summary>
 public class IKManager : MonoBehaviour
 {
-    public GameObject[] inverseKinematicsArray { get; set; }
+    public GameObject[] HandIKList { get; set; }     // 手と指のIKターゲットのGameObjectリスト
+
     [SerializeField]
-    public IK[] components;
-    private bool updateFrame;
+    public IK[] componentList;                       // IKのコンポーネントリスト
+    private bool updateFrame;                        // フレーム内でFixedUpdateを使っているか判断
+
     void Awake()
     {
-        inverseKinematicsArray = new GameObject[12];
+        HandIKList = new GameObject[12];
+        //  子要素に揃っているIKのGameObjectを取得
         for (int fingerCount = 0; fingerCount < 12; fingerCount++)
         {
-            inverseKinematicsArray[fingerCount] = transform.GetChild(fingerCount).gameObject;
+            HandIKList[fingerCount] = transform.GetChild(fingerCount).gameObject;
+        }
+
+        FixFingers();
+    }
+
+    void FixFingers()
+    {
+        GameObject tmpObj;
+        for (int fingerCount = 0; fingerCount < 5; fingerCount++)
+        {
+            tmpObj = HandIKList[fingerCount];
+            HandIKList[fingerCount] = HandIKList[9 - fingerCount];
+            HandIKList[9 - fingerCount] = tmpObj;
         }
     }
 
     void Start()
     {
-        foreach (IK component in components) component.Disable();
+        //  IKの処理順を変える為、一度Disableする
+        foreach (IK component in componentList)
+            component.Disable();
     }
     void FixedUpdate()
     {
-        updateFrame = true;
+        updateFrame = true;     
     }
     void LateUpdate()
     {
         updateFrame = false;
-        foreach (IK component in components) component.GetIKSolver().Update();
+
+        // IKをリスト順にUpdate処理
+        foreach (IK component in componentList)
+            component.GetIKSolver().Update();
     }
 }

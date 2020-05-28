@@ -7,11 +7,7 @@ public class PianoController : MonoBehaviour
 {
     public Dictionary<int, PianoKey> keyMap { get; private set; }     // intはノード番号、GameObjectは鍵盤のGameObjectを格納
 
-
-    public Dictionary<int, Vector3> defaultKeyPos { get; private set; }
-
-    int midiDeltaTime;
-    int beforeMidiDeltaTime;
+    public Dictionary<int, Vector3> defaultKeyPos { get; private set; } // 鍵盤の初期位置を設定
 
     void Awake()
     {
@@ -25,7 +21,11 @@ public class PianoController : MonoBehaviour
         }
     }
 
-    // String型のノード情報をint型ノード番号に変換
+    /// <summary>
+    /// String型のノード情報をint型ノード番号に変換
+    /// </summary>
+    /// <param name="key"></param>
+    /// <returns></returns>
     int ConvertStringkeyToNodenumber(string key)
     {
         int result = 0;
@@ -68,17 +68,25 @@ public class PianoController : MonoBehaviour
         return result;
     }
 
-
+    /// <summary>
+    /// ピアノの鍵盤モーションのコルーチン開始
+    /// </summary>
+    /// <param name="nodeNum">ノード番号</param>
+    /// <param name="playTime">再生時間</param>
     public void Play(int nodeNum, float playTime)
     {
-        Debug.Log(nodeNum + "/" + playTime);
         Observable.FromCoroutine(() => KeyDownCoroutine(nodeNum, playTime)).Subscribe();
-
     }
 
+    /// <summary>
+    /// ピアノの鍵盤モーションの開始
+    /// </summary>
+    /// <param name="nodeNum">ノード番号</param>
+    /// <param name="playTime">再生時間</param>
+    /// <returns></returns>
     IEnumerator KeyDownCoroutine(int nodeNum, float playTime)
     {
-        int useFlame = (int)(playTime / 0.0166) / 3;
+        int useFlame = (int)(playTime / 0.0166) / 3;    // 何フレーム再生させるか
 
         for (int downCount = 0; downCount < useFlame; downCount++)
         {
@@ -96,6 +104,7 @@ public class PianoController : MonoBehaviour
             keyMap[nodeNum].gameObject.transform.position = keyMap[nodeNum].gameObject.transform.position + Vector3.up * 0.0150f / useFlame;
             yield return null;
         }
-        keyMap[nodeNum].gameObject.transform.position = defaultKeyPos[nodeNum];
+
+        keyMap[nodeNum].gameObject.transform.position = defaultKeyPos[nodeNum];     // 鍵盤を初期位置に戻す
     }
 }

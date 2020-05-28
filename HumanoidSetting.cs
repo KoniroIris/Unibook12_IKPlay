@@ -6,11 +6,11 @@ using UnityEngine;
 public class HumanoidSetting : MonoBehaviour
 {
     [SerializeField]
-    GameObject targetModel;
-    Animator _targetAnim;
-    GameObject[] fingertip;     // 指先を格納　左手小指[0]から右に向かって数が増える
-    GameObject[] iKTargetList;  // IKTargetを格納する0に手首のFullBodyBipedIK、1~10が指先のCCDIK 
-    PianoController pianoController;
+    GameObject _targetModel;     // 今回演奏するキャラクターオブジェクト
+    Animator _targetAnim;       // キャラクターオブジェクトのアニメーター
+    GameObject[] _fingertip;     // 指先を格納　左手小指[0]から右に向かって数が増える
+    GameObject[] _iKTargetList;  // IKTargetを格納する0に手首のFullBodyBipedIK、1~10が指先のCCDIK 
+    PianoController _pianoController;
 
     public enum PlayFinger
     {
@@ -42,63 +42,109 @@ public class HumanoidSetting : MonoBehaviour
 
     void Start()
     {
-        Initialize();    
+        _iKTargetList = GameObject.Find("IKManager").GetComponent<IKManager>().HandIKList;
+        _pianoController = GameObject.Find("Piano").GetComponent<PianoController>();
+        _targetAnim = _targetModel.GetComponent<Animator>();
+
+        //  指先のGameObjectをHumanBodyBonesから取得
+        _fingertip = new GameObject[12];
+        _fingertip[0] = GetDeepestChildren(_targetAnim.GetBoneTransform(HumanBodyBones.LeftLittleDistal).gameObject);
+        _fingertip[1] = GetDeepestChildren(_targetAnim.GetBoneTransform(HumanBodyBones.LeftRingDistal).gameObject);
+        _fingertip[2] = GetDeepestChildren(_targetAnim.GetBoneTransform(HumanBodyBones.LeftMiddleDistal).gameObject);
+        _fingertip[3] = GetDeepestChildren(_targetAnim.GetBoneTransform(HumanBodyBones.LeftIndexDistal).gameObject);
+        _fingertip[4] = GetDeepestChildren(_targetAnim.GetBoneTransform(HumanBodyBones.LeftThumbDistal).gameObject);
+        _fingertip[5] = GetDeepestChildren(_targetAnim.GetBoneTransform(HumanBodyBones.RightThumbDistal).gameObject);
+        _fingertip[6] = GetDeepestChildren(_targetAnim.GetBoneTransform(HumanBodyBones.RightIndexDistal).gameObject);
+        _fingertip[7] = GetDeepestChildren(_targetAnim.GetBoneTransform(HumanBodyBones.RightMiddleDistal).gameObject);
+        _fingertip[8] = GetDeepestChildren(_targetAnim.GetBoneTransform(HumanBodyBones.RightRingDistal).gameObject);
+        _fingertip[9] = GetDeepestChildren(_targetAnim.GetBoneTransform(HumanBodyBones.RightLittleDistal).gameObject);
+
+        //  手首のGameObjectをHumanBodyBonesから取得
+        _fingertip[10] = _targetAnim.GetBoneTransform(HumanBodyBones.LeftHand).gameObject;
+        _fingertip[11] = _targetAnim.GetBoneTransform(HumanBodyBones.RightHand).gameObject;
+
+        //  キャラクター演奏アニメーションの初期設定
+        PlayHandInitialize();
     }
 
     void Update()
     {
+        //  入力キーから再生する演奏アニメーションを選択
         if (Input.GetKeyDown(KeyCode.Q))
-            fingerMove(76);
+        {
+            _pianoController.Play(84, 0.5f);
+            HandIKMove(84, 0);
+        }
         if (Input.GetKeyDown(KeyCode.Alpha2))
-            fingerMove(77);
+        {
+            _pianoController.Play(85, 0.5f);
+            HandIKMove(85, 1);
+        }
         if (Input.GetKeyDown(KeyCode.W))
-            fingerMove(78);
+        {
+            _pianoController.Play(86, 0.5f);
+            HandIKMove(86, 2);
+        }
         if (Input.GetKeyDown(KeyCode.Alpha3))
-            fingerMove(79);
+        {
+            _pianoController.Play(87, 0.5f);
+            HandIKMove(87, 3);
+        }
         if (Input.GetKeyDown(KeyCode.E))
-            fingerMove(80);
+        {
+            _pianoController.Play(88, 0.5f);
+            HandIKMove(88, 4);
+        }
         if (Input.GetKeyDown(KeyCode.R))
-            fingerMove(81);
+        {
+            _pianoController.Play(89, 0.5f);
+            HandIKMove(89, 5);
+        }
         if (Input.GetKeyDown(KeyCode.Alpha5))
-            fingerMove(82);
+        {
+            _pianoController.Play(90, 0.5f);
+            HandIKMove(90, 6);
+        }
         if (Input.GetKeyDown(KeyCode.T))
-            fingerMove(83);
+        {
+            _pianoController.Play(91, 0.5f);
+            HandIKMove(91, 6);
+        }
         if (Input.GetKeyDown(KeyCode.Alpha6))
-            fingerMove(84);
+        {
+            _pianoController.Play(92, 0.5f);
+            HandIKMove(92, 7);
+        }
         if (Input.GetKeyDown(KeyCode.Y))
-            fingerMove(85);
+        {
+            _pianoController.Play(93, 0.5f);
+            HandIKMove(93, 7);
+        }
         if (Input.GetKeyDown(KeyCode.Alpha7))
-            fingerMove(86);
+        {
+            _pianoController.Play(94, 0.5f);
+            HandIKMove(94, 9);
+        }
         if (Input.GetKeyDown(KeyCode.U))
-            fingerMove(87);
+        {
+            _pianoController.Play(95, 0.5f);
+            HandIKMove(95, 8);
+        }
         if (Input.GetKeyDown(KeyCode.I))
-            fingerMove(88);
+        {
+            _pianoController.Play(96, 0.5f);
+            HandIKMove(96, 9);
+        }
     }
 
-    public void Initialize()
-    {
-        iKTargetList = GameObject.Find("IKManager").GetComponent<IKManager>().inverseKinematicsArray;
-
-        pianoController = GameObject.Find("Piano").GetComponent<PianoController>();
-        _targetAnim = targetModel.GetComponent<Animator>();
-
-        fingertip = new GameObject[12];
-        fingertip[0] = SeachFingertips(_targetAnim.GetBoneTransform(HumanBodyBones.LeftLittleDistal).gameObject);
-        fingertip[1] = SeachFingertips(_targetAnim.GetBoneTransform(HumanBodyBones.LeftRingDistal).gameObject);
-        fingertip[2] = SeachFingertips(_targetAnim.GetBoneTransform(HumanBodyBones.LeftMiddleDistal).gameObject);
-        fingertip[3] = SeachFingertips(_targetAnim.GetBoneTransform(HumanBodyBones.LeftIndexDistal).gameObject);
-        fingertip[4] = SeachFingertips(_targetAnim.GetBoneTransform(HumanBodyBones.LeftThumbDistal).gameObject);
-        fingertip[5] = SeachFingertips(_targetAnim.GetBoneTransform(HumanBodyBones.RightThumbDistal).gameObject);
-        fingertip[6] = SeachFingertips(_targetAnim.GetBoneTransform(HumanBodyBones.RightIndexDistal).gameObject);
-        fingertip[7] = SeachFingertips(_targetAnim.GetBoneTransform(HumanBodyBones.RightMiddleDistal).gameObject);
-        fingertip[8] = SeachFingertips(_targetAnim.GetBoneTransform(HumanBodyBones.RightRingDistal).gameObject);
-        fingertip[9] = SeachFingertips(_targetAnim.GetBoneTransform(HumanBodyBones.RightLittleDistal).gameObject);
-        fingertip[10] = _targetAnim.GetBoneTransform(HumanBodyBones.LeftHand).gameObject;
-        fingertip[11] = _targetAnim.GetBoneTransform(HumanBodyBones.RightHand).gameObject;
-
-        PlayHandInitialize();
-    }
-
+    /// <summary>
+    /// ポーズ毎の手首から指の相対距離を返す
+    /// fingerNumが0～4なら左手首の処理
+    /// fingerNumが5～9なら右手首の処理
+    /// </summary>
+    /// <param name="playFinger">ポーズの指定</param>
+    /// <param name="fingerNum">指の指定</param>
+    /// <returns></returns>
     public Vector3 RelativePositionFromHand(PlayFinger playFinger, int fingerNum)
     {
         if (fingerNum < 5)
@@ -113,139 +159,129 @@ public class HumanoidSetting : MonoBehaviour
         return Vector3.zero;
     }
 
-    public Vector3 RelativePositionFromKey(PlayFinger playFinger, int fingerNum)
-    {
-        if (fingerNum < 5)
-        {
-            return playPosList[playFinger][fingerNum] - pianoController.keyMap[84].gameObject.transform.position;
-        }
-        if (fingerNum < 10)
-        {
-            return playPosList[playFinger][fingerNum] - pianoController.keyMap[96].gameObject.transform.position;
-        }
-        if (fingerNum == 10)
-        {
-            return playPosList[playFinger][fingerNum] - pianoController.keyMap[84].gameObject.transform.position;
-        }
-        if (fingerNum == 11)
-        {
-            return playPosList[playFinger][fingerNum] - pianoController.keyMap[96].gameObject.transform.position;
-        }
-
-        return Vector3.zero;
-    }
-
-    // 指のIKTargetオブジェクトをモデルの指先に、手首のIKTargetオブジェクトをモデルの手首に移動
-    public void OpenHandInitialize()
-    {
-        Vector3[] playPos = new Vector3[12];
-        for (int fingerNum = 0; fingerNum < 10; fingerNum++)
-        {
-            iKTargetList[fingerNum].transform.position = fingertip[fingerNum].transform.position;
-            playPos[fingerNum] = fingertip[fingerNum].transform.position;
-        }
-
-        playPos[10] = _targetAnim.GetBoneTransform(HumanBodyBones.LeftHand).position;
-        playPos[11] = _targetAnim.GetBoneTransform(HumanBodyBones.RightHand).position;
-    }
-
     public void PlayHandInitialize()
     {
-        Observable.FromCoroutine(() => PlayHandPosCoroutine()).Subscribe();
+        Observable.FromCoroutine(() => PlayHandPosInitCoroutine()).Subscribe();
     }
 
-    IEnumerator PlayHandPosCoroutine()
+    /// <summary>
+    /// 手首と指のIKターゲットが演奏する時のポーズを設定する
+    /// </summary>
+    /// <returns></returns>
+    IEnumerator PlayHandPosInitCoroutine()
     {
         Vector3[][] playPos = new Vector3[50][];
 
+        Vector3 changePos = Vector3.zero;
+
+        // 手を開いている状態のポーズを設定
+        /*
         Vector3 openPos = _targetAnim.GetBoneTransform(HumanBodyBones.LeftIndexProximal).transform.position - Vector3.up * 0.025f;
 
         for (int fingerNum = 0; fingerNum < 10; fingerNum++)
         {
             Vector3 changePos = Vector3.zero;
 
-            changePos = fingertip[fingerNum].transform.position;
+            changePos = _fingertip[fingerNum].transform.position;
 
-            changePos.y = openPos.y;
+            changePos.z = openPos.z + 1;
 
-            iKTargetList[fingerNum].transform.position = changePos;
+            _iKTargetList[fingerNum].transform.position = changePos;
         }
 
         yield return new WaitForSeconds(1.5f);
+        */
+
+        ///////////////////////////////////////////////////////////////////////////////////
+
+
+        yield return new WaitForSeconds(0.3f);
 
         playPos[(int)PlayFinger.Open] = new Vector3[12];
+
+        // 手を開いている状態のポーズを設定
+        changePos = Vector3.zero;
+        changePos.y += 0.05f;
+        changePos.z += 1;
         for (int fingerNum = 0; fingerNum < 10; fingerNum++)
         {
-            iKTargetList[fingerNum].transform.position = fingertip[fingerNum].transform.position;
-            playPos[(int)PlayFinger.Open][fingerNum] = fingertip[fingerNum].transform.position;
+            _iKTargetList[fingerNum].transform.position = _fingertip[fingerNum].transform.position + changePos;
+            playPos[(int)PlayFinger.Open][fingerNum] = _fingertip[fingerNum].transform.position;
         }
+        _iKTargetList[10].transform.position = _pianoController.keyMap[84].gameObject.transform.position + Vector3.up * 0.05f;
+        _iKTargetList[11].transform.position = _pianoController.keyMap[96].gameObject.transform.position + Vector3.up * 0.05f;
 
+        yield return new WaitForSeconds(0.3f);
+
+        for (int fingerNum = 0; fingerNum < 10; fingerNum++)
+        {
+            playPos[(int)PlayFinger.Open][fingerNum] = _fingertip[fingerNum].transform.position;
+        }
         playPos[(int)PlayFinger.Open][10] = _targetAnim.GetBoneTransform(HumanBodyBones.LeftHand).position;
         playPos[(int)PlayFinger.Open][11] = _targetAnim.GetBoneTransform(HumanBodyBones.RightHand).position;
 
         playPosList.Add(PlayFinger.Open, playPos[(int)PlayFinger.Open]);
 
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(0.3f);
 
-        for (int fingerNum = 0; fingerNum < 10; fingerNum++)
-        {
-            Vector3 changePos = Vector3.zero;
+        ///////////////////////////////////////////////////////////////////////////////////
 
-            changePos = fingertip[fingerNum].transform.position;
-
-            changePos.y -= 0.1f;
-
-            iKTargetList[fingerNum].transform.position = changePos;
-        }
-
-        yield return new WaitForSeconds(1.5f);
-
+        // 10本全ての打鍵時の指のポーズを設定
         playPos[(int)PlayFinger.Close] = new Vector3[12];
         for (int fingerNum = 0; fingerNum < 10; fingerNum++)
         {
-            iKTargetList[fingerNum].transform.position = fingertip[fingerNum].transform.position;
-            playPos[(int)PlayFinger.Close][fingerNum] = fingertip[fingerNum].transform.position;
+            _iKTargetList[fingerNum].transform.position = _fingertip[fingerNum].transform.position + Vector3.down;
+            playPos[(int)PlayFinger.Close][fingerNum] = _fingertip[fingerNum].transform.position;
         }
 
+        yield return new WaitForSeconds(0.3f);
+
+        for (int fingerNum = 0; fingerNum < 10; fingerNum++)
+        {
+            playPos[(int)PlayFinger.Close][fingerNum] = _fingertip[fingerNum].transform.position;
+        }
         playPos[(int)PlayFinger.Close][10] = _targetAnim.GetBoneTransform(HumanBodyBones.LeftHand).position;
         playPos[(int)PlayFinger.Close][11] = _targetAnim.GetBoneTransform(HumanBodyBones.RightHand).position;
 
         playPosList.Add(PlayFinger.Close, playPos[(int)PlayFinger.Close]);
 
-        yield return new WaitForSeconds(1.5f);
+        yield return new WaitForSeconds(0.3f);
+        
+        ///////////////////////////////////////////////////////////////////////////////////
 
+        // 個別の打鍵ポーズを設定
         for (int poseNum = 0; poseNum < 20; poseNum++)
         {
             playPos[poseNum] = new Vector3[12];
 
             if (poseNum % 10 < 5)
-                iKTargetList[10].transform.position = pianoController.keyMap[84].gameObject.transform.position - RelativePositionFromHand(PlayFinger.Close, poseNum % 10);
+                _iKTargetList[10].transform.position = _pianoController.keyMap[84].gameObject.transform.position - RelativePositionFromHand(PlayFinger.Close, poseNum % 10);
             else
-                iKTargetList[11].transform.position = pianoController.keyMap[96].gameObject.transform.position - RelativePositionFromHand(PlayFinger.Close, poseNum % 10);
+                _iKTargetList[11].transform.position = _pianoController.keyMap[96].gameObject.transform.position - RelativePositionFromHand(PlayFinger.Close, poseNum % 10);
 
             for (int fingerNum = 0; fingerNum < 10; fingerNum++)
             {
                 if (poseNum == fingerNum && poseNum < 10)
                 {
                     if (fingerNum < 5)
-                        iKTargetList[fingerNum].transform.position = iKTargetList[10].transform.position + RelativePositionFromHand(PlayFinger.Close, fingerNum);
+                        _iKTargetList[fingerNum].transform.position = _iKTargetList[10].transform.position + RelativePositionFromHand(PlayFinger.Close, fingerNum);
                     else
-                        iKTargetList[fingerNum].transform.position = iKTargetList[11].transform.position + RelativePositionFromHand(PlayFinger.Close, fingerNum);
+                        _iKTargetList[fingerNum].transform.position = _iKTargetList[11].transform.position + RelativePositionFromHand(PlayFinger.Close, fingerNum);
                 }
                 else
                 {
                     if (fingerNum < 5)
-                        iKTargetList[fingerNum].transform.position = iKTargetList[10].transform.position + RelativePositionFromHand(PlayFinger.Open, fingerNum);
+                        _iKTargetList[fingerNum].transform.position = _iKTargetList[10].transform.position + RelativePositionFromHand(PlayFinger.Open, fingerNum);
                     else
-                        iKTargetList[fingerNum].transform.position = iKTargetList[11].transform.position + RelativePositionFromHand(PlayFinger.Open, fingerNum);
+                        _iKTargetList[fingerNum].transform.position = _iKTargetList[11].transform.position + RelativePositionFromHand(PlayFinger.Open, fingerNum);
                 }
             }
 
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.2f);
 
             for (int fingerNum = 0; fingerNum < 12; fingerNum++)
             {
-                playPos[poseNum][fingerNum] = iKTargetList[fingerNum].transform.position;
+                playPos[poseNum][fingerNum] = _iKTargetList[fingerNum].transform.position;
             }
         }
 
@@ -255,38 +291,49 @@ public class HumanoidSetting : MonoBehaviour
         }
     }
 
-    GameObject SeachFingertips(GameObject fingerObj)
+    /// <summary>
+    /// GameObjectの一番下の子供のオブジェクトを返す
+    /// </summary>
+    /// <param name="parentObj"></param>
+    /// <returns></returns>
+    GameObject GetDeepestChildren(GameObject parentObj)
     {
-        if (fingerObj.transform.childCount > 0)
+        if (parentObj.transform.childCount > 0)
         {
-            return fingerObj.transform.GetChild(0).gameObject;
+            return parentObj.transform.GetChild(0).gameObject;
         }
-        return fingerObj;
+        return parentObj;
     }
 
-    public void fingerMove(int poseNum)
+    /// <summary>
+    /// 指と手首ののIK位置を動かす
+    /// </summary>
+    /// <param name="nodeNum">演奏するノード番号</param>
+    public void HandIKMove(int nodeNum, int useFingerNum)
     {
-
-        if (poseNum % 10 < 5)
-            iKTargetList[10].transform.position = pianoController.keyMap[84].gameObject.transform.position - RelativePositionFromHand(PlayFinger.Close, poseNum % 10);
+        // 手首のIKターゲットの位置設定
+        if(useFingerNum < 5)
+            _iKTargetList[10].transform.position = _pianoController.keyMap[nodeNum].gameObject.transform.position - RelativePositionFromHand(PlayFinger.Close, useFingerNum);
         else
-            iKTargetList[11].transform.position = pianoController.keyMap[96].gameObject.transform.position - RelativePositionFromHand(PlayFinger.Close, poseNum % 10);
+            _iKTargetList[11].transform.position = _pianoController.keyMap[nodeNum].gameObject.transform.position - RelativePositionFromHand(PlayFinger.Close, useFingerNum);
 
+
+        // 各指のIKターゲットの位置設定
         for (int fingerNum = 0; fingerNum < 10; fingerNum++)
         {
-            if (poseNum == fingerNum && poseNum < 10)
+            if (useFingerNum == fingerNum)
             {
                 if (fingerNum < 5)
-                    iKTargetList[fingerNum].transform.position = iKTargetList[10].transform.position + RelativePositionFromHand(PlayFinger.Close, fingerNum);
+                    _iKTargetList[fingerNum].transform.position = _iKTargetList[10].transform.position + RelativePositionFromHand(PlayFinger.Close, fingerNum);
                 else
-                    iKTargetList[fingerNum].transform.position = iKTargetList[11].transform.position + RelativePositionFromHand(PlayFinger.Close, fingerNum);
+                    _iKTargetList[fingerNum].transform.position = _iKTargetList[11].transform.position + RelativePositionFromHand(PlayFinger.Close, fingerNum);
             }
             else
             {
                 if (fingerNum < 5)
-                    iKTargetList[fingerNum].transform.position = iKTargetList[10].transform.position + RelativePositionFromHand(PlayFinger.Open, fingerNum);
+                    _iKTargetList[fingerNum].transform.position = _iKTargetList[10].transform.position + RelativePositionFromHand(PlayFinger.Open, fingerNum);
                 else
-                    iKTargetList[fingerNum].transform.position = iKTargetList[11].transform.position + RelativePositionFromHand(PlayFinger.Open, fingerNum);
+                    _iKTargetList[fingerNum].transform.position = _iKTargetList[11].transform.position + RelativePositionFromHand(PlayFinger.Open, fingerNum);
             }
         }
         return;
